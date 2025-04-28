@@ -972,4 +972,32 @@ function extractGenericResults(
             for (const result of results) {
               if (result.url === new URL(href, baseUrl).href) {
                 alreadyIncluded = true
-                }
+                break
+              }
+            }
+            
+            if (alreadyIncluded) continue
+            
+            results.push({
+              id: `${databaseId}-link-${results.length}`,
+              title: text,
+              url: new URL(href, baseUrl).href,
+              source: getDatabaseSourceName(databaseId),
+              date: new Date().toISOString().split('T')[0],
+              snippet: `Link found on page: ${text}`,
+              authors: [],
+            })
+          } catch (linkError) {
+            console.error("Error processing link:", linkError)
+            continue
+          }
+        }
+      }
+    }
+    
+    return results
+  } catch (error) {
+    console.error(`Error in extractGenericResults for ${databaseId}:`, error)
+    return []
+  }
+}
