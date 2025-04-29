@@ -109,19 +109,17 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
 
   const selectAllInCategory = (category: string, databases: Database[]) => {
     const dbIds = databases.map((db) => db.id)
-
-    if (dbIds.every((id) => selectedDatabases.includes(id))) {
-      // If all are selected, deselect all
+    const allSelected = dbIds.every((id) => selectedDatabases.includes(id))
+    
+    if (allSelected) {
+      // If all are selected, deselect all in this category
       setSelectedDatabases(selectedDatabases.filter((id) => !dbIds.includes(id)))
     } else {
-      // Otherwise, select all that aren't already selected
-      const newSelected = [...selectedDatabases]
-      dbIds.forEach((id) => {
-        if (!newSelected.includes(id)) {
-          newSelected.push(id)
-        }
-      })
-      setSelectedDatabases(newSelected)
+      // Otherwise, ensure all in this category are selected
+      // First remove any that might be in the category (to avoid duplicates)
+      const filtered = selectedDatabases.filter((id) => !dbIds.includes(id))
+      // Then add all database IDs from this category
+      setSelectedDatabases([...filtered, ...dbIds])
     }
   }
 
@@ -322,7 +320,11 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
           <div className="mt-2 flex justify-between">
             <button
               type="button"
-              onClick={() => setSelectedDatabases(defaultDatabases.map((db) => db.id))}
+              onClick={() => {
+                // Ensure we get all database IDs without duplicates
+                const allDatabaseIds = defaultDatabases.map((db) => db.id)
+                setSelectedDatabases(allDatabaseIds)
+              }}
               className="text-sm text-blue-600 hover:text-blue-800"
             >
               Select All
