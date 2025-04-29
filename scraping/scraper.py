@@ -4,16 +4,63 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
+import random
 
 # List to store the scraped data
 scraped_data = []
 
+# Function to fetch with retry mechanism
+def fetch_with_retry(url, headers=None, retries=3, initial_delay=1.0, max_delay=30.0, backoff_factor=2.0, jitter_factor=0.25):
+    """Fetch a URL with retry mechanism using exponential backoff and jitter
+    
+    Args:
+        url: URL to fetch
+        headers: Request headers
+        retries: Maximum number of retry attempts
+        initial_delay: Initial delay in seconds
+        max_delay: Maximum delay in seconds
+        backoff_factor: Multiplier for exponential backoff
+        jitter_factor: Amount of randomness (0-1) to add to delay
+        
+    Returns:
+        Response object if successful, None otherwise
+    """
+    headers = headers or {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
+            response.raise_for_status()  # Check for HTTP errors
+            return response
+        except requests.exceptions.RequestException as e:
+            # If this was the last attempt, return None
+            if attempt >= retries:
+                print(f"Error: All {retries + 1} attempts to fetch {url} failed. Last error: {e}")
+                return None
+            
+            # Calculate delay with exponential backoff
+            delay = initial_delay * (backoff_factor ** attempt)
+            
+            # Cap at maximum delay
+            delay = min(delay, max_delay)
+            
+            # Add jitter to prevent thundering herd problem
+            jitter_amount = delay * jitter_factor
+            delay += (random.random() * jitter_amount * 2) - jitter_amount
+            
+            print(f"Error on attempt {attempt + 1}: {e}")
+            print(f"Retrying in {delay:.2f} seconds...")
+            time.sleep(delay)
+
 # Function to scrape a static site using Requests + BeautifulSoup
 def scrape_static_site(url, headers):
     try:
-        # Fetch the page
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()  # Ensure request was successful
+        # Fetch the page with retry mechanism
+        response = fetch_with_retry(url, headers)
+        if not response:
+            return  # All retries failed
 
         # Parse the page content
         soup = BeautifulSoup(response.text, 'html.parser')

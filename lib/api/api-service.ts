@@ -1,5 +1,6 @@
 import { apiConfigurations, proxyEndpoint } from "./api-config"
 import type { SearchParams, SearchResult } from "@/types"
+import { requiresAdvancedScraping, getDatabaseScrapingConfig } from "@/lib/scraping"
 
 // Rate limiting implementation
 const rateLimits: Record<string, { lastCall: number; callsThisMinute: number }> = {}
@@ -233,59 +234,90 @@ export async function searchDatabaseViaProxy(
   try {
     console.log(`Searching ${databaseId} via ${isAdvanced ? "advanced " : ""}proxy: ${databaseUrl}`)
 
-    const response = await fetch(proxyEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        databaseId,
-        url: databaseUrl,
-        query,
-        advanced: isAdvanced, // Tell the proxy to use advanced techniques
-      }),
-      signal: options.signal,
-    })
+    // Check if this database requires advanced scraping techniques
+    if (isAdvanced || requiresAdvancedScraping(databaseId)) {
+      // Get database-specific scraping configuration
+      const scrapingConfig = getDatabaseScrapingConfig(databaseId)
+      
+      const response = await fetch(proxyEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          databaseId,
+          url: databaseUrl,
+          query,
+          advanced: true, // Tell the proxy to use advanced techniques
+          config: scrapingConfig, // Pass any database-specific configuration
+        }),
+        signal: options.signal,
+      })
 
-    if (!response.ok) {
-      updateDatabaseStatus(databaseId, false)
-      console.error(`Proxy request failed with status ${response.status} for ${databaseId}`)
+      if (!response.ok) {
+        updateDatabaseStatus(databaseId, false)
+        console.error(`Advanced proxy request failed with status ${response.status} for ${databaseId}`)
+        throw new Error(`Advanced proxy request failed with status ${response.status}`)
+      }
 
-      // If regular proxy failed, try advanced proxy
-      if (!isAdvanced) {
-        console.log(`Attempting advanced proxy for ${databaseId}`)
+      const results = await response.json()
+      updateDatabaseStatus(databaseId, true)
+      return Array.isArray(results) ? results : []
+    } else {
+      const response = await fetch(proxyEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          databaseId,
+          url: databaseUrl,
+          query,
+          advanced: isAdvanced, // Tell the proxy to use advanced techniques
+        }),
+        signal: options.signal,
+      })
+
+      if (!response.ok) {
+        updateDatabaseStatus(databaseId, false)
+        console.error(`Proxy request failed with status ${response.status} for ${databaseId}`)
+
+        // If regular proxy failed, try advanced proxy
+        if (!isAdvanced) {
+          console.log(`Attempting advanced proxy for ${databaseId}`)
+          return await searchDatabaseViaProxy(databaseId, databaseUrl, query, options, true)
+        }
+
+        throw new Error(`Proxy request failed with status ${response.status}`)
+      }
+
+      const results = await response.json()
+
+      // Check if the response is an error object
+      if (results && results.error) {
+        updateDatabaseStatus(databaseId, false)
+        console.error(`Proxy returned error for ${databaseId}: ${results.error}`)
+
+        // If regular proxy returned error, try advanced proxy
+        if (!isAdvanced) {
+          console.log(`Attempting advanced proxy after error for ${databaseId}`)
+          return await searchDatabaseViaProxy(databaseId, databaseUrl, query, options, true)
+        }
+
+        throw new Error(results.error)
+      }
+
+      // If we got an empty array, try advanced proxy
+      if (Array.isArray(results) && results.length === 0 && !isAdvanced) {
+        console.log(`No results found for ${databaseId}, trying advanced proxy`)
         return await searchDatabaseViaProxy(databaseId, databaseUrl, query, options, true)
       }
 
-      throw new Error(`Proxy request failed with status ${response.status}`)
+      // Update database status as successful
+      updateDatabaseStatus(databaseId, true)
+
+      return Array.isArray(results) ? results : []
     }
-
-    const results = await response.json()
-
-    // Check if the response is an error object
-    if (results && results.error) {
-      updateDatabaseStatus(databaseId, false)
-      console.error(`Proxy returned error for ${databaseId}: ${results.error}`)
-
-      // If regular proxy returned error, try advanced proxy
-      if (!isAdvanced) {
-        console.log(`Attempting advanced proxy after error for ${databaseId}`)
-        return await searchDatabaseViaProxy(databaseId, databaseUrl, query, options, true)
-      }
-
-      throw new Error(results.error)
-    }
-
-    // If we got an empty array, try advanced proxy
-    if (Array.isArray(results) && results.length === 0 && !isAdvanced) {
-      console.log(`No results found for ${databaseId}, trying advanced proxy`)
-      return await searchDatabaseViaProxy(databaseId, databaseUrl, query, options, true)
-    }
-
-    // Update database status as successful
-    updateDatabaseStatus(databaseId, true)
-
-    return Array.isArray(results) ? results : []
   } catch (error) {
     console.error(`Error searching database ${databaseId} via proxy:`, error)
     updateDatabaseStatus(databaseId, false)
@@ -304,6 +336,22 @@ export async function searchDatabaseViaProxy(
       },
     ]
   }
+}
+
+// Helper function to get database URL from ID
+function getDatabaseUrlForId(databaseId: string, query: string): string {
+  // Map database IDs to their search URLs
+  const databaseUrls: Record<string, string> = {
+    "swissmedic": `https://www.swissmedic.ch/swissmedic/en/home/humanarzneimittel/marktueberwachung/health-professional-communication--hpc-/search.html?query=${encodeURIComponent(query)}`,
+    "ema-medicines": `https://www.ema.europa.eu/en/medicines/search?search_api_views_fulltext=${encodeURIComponent(query)}`,
+    "mhra": `https://products.mhra.gov.uk/?query=${encodeURIComponent(query)}&page=1`,
+    "tga": `https://www.tga.gov.au/search?query=${encodeURIComponent(query)}`,
+    "medsafe": `https://www.medsafe.govt.nz/searchResults.asp?q=${encodeURIComponent(query)}`,
+    "lakemedelsverket": `https://www.lakemedelsverket.se/en/search?q=${encodeURIComponent(query)}`,
+    // Add more databases as needed
+  }
+
+  return databaseUrls[databaseId] || `https://www.google.com/search?q=${encodeURIComponent(query)}+site:${databaseId}`
 }
 
 // Main search function that coordinates searches across multiple databases
