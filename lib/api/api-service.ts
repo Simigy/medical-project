@@ -1,6 +1,6 @@
 import { apiConfigurations, proxyEndpoint } from "./api-config"
 import type { SearchParams, SearchResult } from "@/types"
-import { requiresAdvancedScraping, getDatabaseScrapingConfig } from "@/lib/scraping"
+import { requiresAdvancedScraping, getDatabaseScrapingConfig } from "@/lib/scraping/client"
 
 // Rate limiting implementation
 const rateLimits: Record<string, { lastCall: number; callsThisMinute: number }> = {}
@@ -238,7 +238,7 @@ export async function searchDatabaseViaProxy(
     if (isAdvanced || requiresAdvancedScraping(databaseId)) {
       // Get database-specific scraping configuration
       const scrapingConfig = getDatabaseScrapingConfig(databaseId)
-      
+
       const response = await fetch(proxyEndpoint, {
         method: "POST",
         headers: {

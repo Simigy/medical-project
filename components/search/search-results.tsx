@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ExternalLink, Download, Bookmark, Filter, AlertCircle, AlertTriangle, RefreshCw } from "lucide-react"
 import type { SearchResult } from "@/types"
+import ErrorBoundary from "@/components/error-boundary"
 
 interface SearchResultsProps {
   results: SearchResult[]
@@ -51,12 +52,18 @@ export default function SearchResults({
   // Get unique sources for filtering
   const sources = Array.from(new Set(results.map((result) => result.source)))
 
+  // Check if these are batch search results
+  const isBatchSearch = results.length > 0 && results[0].source?.includes("Batch Search")
+
   // Apply sorting and filtering
   const filteredResults = [...results]
     .filter((result) => (filterSource ? result.source === filterSource : true))
     .sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
+        // Handle missing dates by treating them as oldest
+        const dateA = a.date ? new Date(a.date).getTime() : 0
+        const dateB = b.date ? new Date(b.date).getTime() : 0
+        return dateB - dateA
       }
       // For relevance sorting, use the relevanceScore if available
       return (b.relevanceScore || 0) - (a.relevanceScore || 0)
@@ -114,14 +121,29 @@ export default function SearchResults({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">Search Results</h2>
-          <p className="text-gray-600">
-            Found {totalResults} results {isLoading && "(still searching...)"}
-          </p>
+    <ErrorBoundary fallback={
+      <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+        <div className="text-center py-8">
+          <AlertCircle className="h-16 w-16 mx-auto text-red-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-700 mb-1">Error loading results</h3>
+          <p className="text-gray-500 mb-4">There was a problem displaying the search results.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Reload page
+          </button>
         </div>
+      </div>
+    }>
+      <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Search Results</h2>
+            <p className="text-gray-600">
+              Found {totalResults} results {isLoading && "(still searching...)"}
+            </p>
+          </div>
 
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-3 md:mt-0">
           <div className="flex items-center">
@@ -339,5 +361,6 @@ export default function SearchResults({
         })}
       </div>
     </div>
+    </ErrorBoundary>
   )
 }

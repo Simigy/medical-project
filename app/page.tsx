@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import SearchForm from "@/components/search/search-form"
 import SearchResults from "@/components/search/search-results"
 import type { SearchParams, SearchResult } from "@/types"
@@ -39,16 +39,35 @@ export default function HomePage() {
     setSearchProgress({})
     setLastSearchParams(params)
 
-    // Track databases being searched
-    const databasesInProgress = new Set(
-      params.databaseUrls.map((url) => {
-        const urlObj = new URL(url)
-        return urlObj.hostname.replace("www.", "").split(".")[0]
-      }),
-    )
+    // Check if this is a batch search
+    if (params.additionalFilters?.isBatchSearch && params.additionalFilters?.batchSearchResults) {
+      // Handle batch search results
+      const batchResults = params.additionalFilters.batchSearchResults as SearchResult[]
+
+      // Process the batch results
+      setResults(batchResults)
+      setTotalResults(batchResults.length)
+      setIsLoading(false)
+      setAbortController(null)
+
+      // Update progress for display
+      const batchProgress: Record<string, number> = {}
+      const sourceGroups = batchResults.reduce((acc, result) => {
+        const source = result.source || "Unknown"
+        acc[source] = (acc[source] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+
+      Object.entries(sourceGroups).forEach(([source, count]) => {
+        batchProgress[source] = count
+      })
+
+      setSearchProgress(batchProgress)
+      return
+    }
 
     try {
-      // Start the search across all databases
+      // Start the search
       const allResults = await searchDatabases(params, {
         signal: newController.signal,
         onProgress: (partialResults, databaseId) => {
@@ -66,25 +85,13 @@ export default function HomePage() {
             ...prev,
             [databaseId]: partialResults.length,
           }))
-
-          // Remove from in-progress set
-          databasesInProgress.delete(databaseId)
-
-          // If all databases have returned results, set loading to false
-          if (databasesInProgress.size === 0) {
-            setIsLoading(false)
-          }
         },
       })
 
       // Ensure we have the final count
       setTotalResults(allResults.length)
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        console.log("Search was cancelled")
-      } else {
-        console.error("Error during search:", error)
-      }
+      console.error("Error during search:", error)
     } finally {
       // Ensure loading state is reset even if there's an error
       setIsLoading(false)
@@ -120,12 +127,8 @@ export default function HomePage() {
       // Remove existing results for this database
       setResults((prevResults) => prevResults.filter((r) => !r.id.startsWith(`${databaseId}-`)))
 
-      // Create a new abort controller for this search
-      const newController = new AbortController()
-
       // Start the search for just this database
       searchDatabases(retryParams, {
-        signal: newController.signal,
         onProgress: (partialResults, dbId) => {
           // Update results
           setResults((prevResults) => {
@@ -144,7 +147,7 @@ export default function HomePage() {
         console.error(`Error retrying database ${databaseId}:`, error)
       })
     },
-    [lastSearchParams],
+    [lastSearchParams]
   )
 
   return (

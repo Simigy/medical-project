@@ -3,9 +3,11 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Search, PlusCircle, MinusCircle, X } from "lucide-react"
+import { Search, PlusCircle, MinusCircle, X, Database as DatabaseIcon, Zap, AlertTriangle, Terminal } from "lucide-react"
 import type { SearchParams } from "@/types"
 import { defaultDatabases } from "@/data/default-databases"
+import SearchLogs from "./search-logs"
+import { runBatchSearch } from "@/lib/scraping/client"
 
 interface SearchFormProps {
   onSubmit: (params: SearchParams) => void
@@ -22,11 +24,28 @@ interface Database {
 
 export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchFormProps) {
   const [activeIngredients, setActiveIngredients] = useState<string[]>([""])
-  const [selectedDatabases, setSelectedDatabases] = useState<string[]>([defaultDatabases[0].id])
-  const [fromDate, setFromDate] = useState<string>("")
-  const [toDate, setToDate] = useState<string>("")
+  const [selectedDatabases, setSelectedDatabases] = useState<string[]>(["pubmed", "fda-drugs", "ema-medicines", "nejm", "amjmed"])
+  // Set default date range to 2025
+  const futureDate = new Date("2025-12-31")
+  const startDate = new Date("2025-01-01")
+
+  const defaultFromDate = startDate.toISOString().split('T')[0] // Format: YYYY-MM-DD
+  const defaultToDate = futureDate.toISOString().split('T')[0] // Format: YYYY-MM-DD
+
+  const [fromDate, setFromDate] = useState<string>(defaultFromDate)
+  const [toDate, setToDate] = useState<string>(defaultToDate)
   const [databaseFilter, setDatabaseFilter] = useState("")
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["Australia", "United States"])
+  const [useBatchSearch, setUseBatchSearch] = useState<boolean>(true)
+  const [batchSearchLimit, setBatchSearchLimit] = useState<number>(10)
+  const [useCommercialDatabases, setUseCommercialDatabases] = useState<boolean>(false)
+  const [useCaptchaSolver, setUseCaptchaSolver] = useState<boolean>(true)
+  const [useBrowserAutomation, setUseBrowserAutomation] = useState<boolean>(true)
+
+  // Logs state
+  const [logs, setLogs] = useState<string[]>([])
+  const [showLogs, setShowLogs] = useState<boolean>(false)
+  const [isStreaming, setIsStreaming] = useState<boolean>(false)
 
   const handleAddActiveIngredient = () => {
     setActiveIngredients([...activeIngredients, ""])
@@ -110,7 +129,7 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
   const selectAllInCategory = (category: string, databases: Database[]) => {
     const dbIds = databases.map((db) => db.id)
     const allSelected = dbIds.every((id) => selectedDatabases.includes(id))
-    
+
     if (allSelected) {
       // If all are selected, deselect all in this category
       setSelectedDatabases(selectedDatabases.filter((id) => !dbIds.includes(id)))
@@ -123,7 +142,7 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Filter out empty ingredients
@@ -139,7 +158,117 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
       return
     }
 
-    // Convert selected database IDs to URLs
+    // If using batch search, call the batch search API
+    if (useBatchSearch) {
+      // Confirm if a large number of databases are selected
+      if (selectedDatabases.length > 20 && batchSearchLimit === 0) {
+        const confirmSearch = window.confirm(
+          `You have selected ${selectedDatabases.length} databases for batch search. This may take a long time. Do you want to continue?`
+        )
+        if (!confirmSearch) {
+          return
+        }
+      }
+
+      // Clear previous logs and show the logs panel
+      setLogs([])
+      setShowLogs(true)
+      setIsStreaming(true)
+
+      try {
+        // Call the batch search API with streaming response
+        const response = await fetch("/api/batch-search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: filteredIngredients.join(" OR "),
+            databaseIds: selectedDatabases,
+            limit: batchSearchLimit > 0 ? batchSearchLimit : undefined,
+            fromDate: fromDate || null,
+            toDate: toDate || null,
+            useCommercialDatabases: useCommercialDatabases,
+            useCaptchaSolver: useCaptchaSolver,
+            useBrowserAutomation: useBrowserAutomation,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`)
+        }
+
+        // Get the reader from the response body
+        const reader = response.body?.getReader()
+        if (!reader) {
+          throw new Error("Failed to get reader from response")
+        }
+
+        // Process the stream
+        let results: any[] = []
+        let decoder = new TextDecoder()
+        let buffer = ""
+
+        while (true) {
+          const { done, value } = await reader.read()
+
+          if (done) {
+            // Process any remaining buffer
+            if (buffer) {
+              setLogs(prev => [...prev, buffer])
+            }
+            break
+          }
+
+          // Decode the chunk and add it to the buffer
+          const chunk = decoder.decode(value, { stream: true })
+          buffer += chunk
+
+          // Process complete lines
+          const lines = buffer.split("\n")
+          buffer = lines.pop() || "" // Keep the last incomplete line in the buffer
+
+          for (const line of lines) {
+            // Check if this is the results line
+            if (line.startsWith("RESULTS:")) {
+              try {
+                results = JSON.parse(line.substring(8))
+                setLogs(prev => [...prev, "Received search results"])
+              } catch (e) {
+                setLogs(prev => [...prev, `ERROR: Failed to parse results: ${e}`])
+              }
+            } else if (line.trim()) {
+              // Add the line to logs
+              setLogs(prev => [...prev, line])
+            }
+          }
+        }
+
+        setIsStreaming(false)
+
+        // Create a search params object with the results
+        const searchParams: SearchParams = {
+          activeIngredients: filteredIngredients,
+          databaseUrls: [],  // Not needed for batch search
+          fromDate: fromDate || null,
+          toDate: toDate || null,
+          additionalFilters: {
+            batchSearchResults: results,
+            isBatchSearch: true,
+          },
+        }
+
+        onSubmit(searchParams)
+      } catch (error) {
+        console.error("Batch search error:", error)
+        setLogs(prev => [...prev, `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`])
+        setIsStreaming(false)
+      }
+
+      return
+    }
+
+    // Regular search - convert selected database IDs to URLs
     const databaseUrls = selectedDatabases
       .map((id) => {
         const database = defaultDatabases.find((db) => db.id === id)
@@ -368,8 +497,119 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
           </div>
         </div>
 
+        {/* Advanced Search Options */}
+        <div className="mb-6 border border-gray-200 rounded-md p-4 bg-gray-50">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Advanced Search Options</h3>
+
+          {/* Batch Search Option */}
+          <div className="flex items-center mb-3">
+            <input
+              type="checkbox"
+              id="useBatchSearch"
+              checked={useBatchSearch}
+              onChange={(e) => setUseBatchSearch(e.target.checked)}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="useBatchSearch" className="ml-2 flex items-center text-sm font-medium text-gray-700">
+              <Zap size={16} className="mr-1 text-yellow-500" />
+              Use Batch Search (Fetch data from all selected databases at once)
+            </label>
+          </div>
+
+          {/* Commercial Databases Option */}
+          <div className="flex items-center mb-3">
+            <input
+              type="checkbox"
+              id="useCommercialDatabases"
+              checked={useCommercialDatabases}
+              onChange={(e) => setUseCommercialDatabases(e.target.checked)}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="useCommercialDatabases" className="ml-2 flex items-center text-sm font-medium text-gray-700">
+              <DatabaseIcon size={16} className="mr-1 text-purple-500" />
+              Include Commercial Databases (DrugBank, RxNav, ChEMBL)
+            </label>
+          </div>
+
+          {/* CAPTCHA Solver Option */}
+          <div className="flex items-center mb-3">
+            <input
+              type="checkbox"
+              id="useCaptchaSolver"
+              checked={useCaptchaSolver}
+              onChange={(e) => setUseCaptchaSolver(e.target.checked)}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="useCaptchaSolver" className="ml-2 flex items-center text-sm font-medium text-gray-700">
+              <img src="/captcha-icon.svg" alt="CAPTCHA" className="w-4 h-4 mr-1" onError={(e) => e.currentTarget.style.display = 'none'} />
+              Use CAPTCHA Solver (Helps access protected databases)
+            </label>
+          </div>
+
+          {/* Browser Automation Option */}
+          <div className="flex items-center mb-3">
+            <input
+              type="checkbox"
+              id="useBrowserAutomation"
+              checked={useBrowserAutomation}
+              onChange={(e) => setUseBrowserAutomation(e.target.checked)}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="useBrowserAutomation" className="ml-2 flex items-center text-sm font-medium text-gray-700">
+              <Terminal size={16} className="mr-1 text-green-500" />
+              Use Browser Automation (Human-like behavior to avoid detection)
+            </label>
+          </div>
+
+          {useBatchSearch && (
+            <div className="pl-6 mt-2">
+              <div className="mb-2">
+                <label htmlFor="batchSearchLimit" className="block text-sm font-medium text-gray-700 mb-1">
+                  Database Limit (0 = no limit)
+                </label>
+                <input
+                  type="number"
+                  id="batchSearchLimit"
+                  min="0"
+                  max="149"
+                  value={batchSearchLimit}
+                  onChange={(e) => setBatchSearchLimit(parseInt(e.target.value) || 0)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Limit the number of databases to search (for faster testing). Set to 0 to search all selected databases.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
+                <p className="flex items-center">
+                  <AlertTriangle size={16} className="mr-1 flex-shrink-0" />
+                  <span>
+                    Batch search uses a Python script to fetch data from multiple databases at once.
+                    This may take longer but provides more comprehensive results.
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Submit Button */}
         <div className="mt-6">
+          <div className="flex justify-between items-center mb-4">
+            {useBatchSearch && (
+              <button
+                type="button"
+                onClick={() => setShowLogs(true)}
+                className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md font-medium"
+              >
+                <Terminal className="mr-2" size={18} />
+                {logs.length > 0 ? `View Logs (${logs.length})` : "Show Logs"}
+              </button>
+            )}
+            {!useBatchSearch && <div></div>}
+          </div>
+
           {isLoading ? (
             <div className="flex space-x-4">
               <button
@@ -394,7 +634,7 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Searching...
+                {isStreaming ? "Processing..." : "Searching..."}
               </div>
             </div>
           ) : (
@@ -407,6 +647,13 @@ export default function SearchForm({ onSubmit, isLoading, onCancel }: SearchForm
             </button>
           )}
         </div>
+
+        {/* Logs Modal */}
+        <SearchLogs
+          logs={logs}
+          isVisible={showLogs}
+          onClose={() => setShowLogs(false)}
+        />
       </form>
     </div>
   )

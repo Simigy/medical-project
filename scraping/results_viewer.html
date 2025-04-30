@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSearch Results Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .stats {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filters {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-radius: 5px;
+        }
+        .filters input, .filters select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .filters button {
+            padding: 8px 15px;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filters button:hover {
+            background-color: #3a5a80;
+        }
+        .result-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .result-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .result-card a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .result-card a:hover {
+            text-decoration: underline;
+        }
+        .result-card .meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        .result-card .snippet {
+            margin-top: 10px;
+            color: #555;
+        }
+        .source-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e0f2f1;
+            color: #00796b;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #e9ecef;
+        }
+        .pagination button.active {
+            background-color: #4a6fa5;
+            color: white;
+            border-color: #4a6fa5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>MedSearch Results Viewer</h1>
+    
+    <div class="stats" id="stats">
+        <p>Loading statistics...</p>
+    </div>
+    
+    <div class="filters">
+        <input type="text" id="search-input" placeholder="Filter results...">
+        <select id="source-filter">
+            <option value="">All Sources</option>
+        </select>
+        <button id="apply-filters">Apply Filters</button>
+        <button id="reset-filters">Reset</button>
+    </div>
+    
+    <div id="results-container">
+        <div class="loading">Loading results...</div>
+    </div>
+    
+    <div class="pagination" id="pagination"></div>
+    
+    <script>
+        // State variables
+        let allResults = [];
+        let filteredResults = [];
+        let currentPage = 1;
+        let resultsPerPage = 10;
+        let sources = new Set();
+        
+        // DOM elements
+        const statsElement = document.getElementById('stats');
+        const resultsContainer = document.getElementById('results-container');
+        const paginationElement = document.getElementById('pagination');
+        const searchInput = document.getElementById('search-input');
+        const sourceFilter = document.getElementById('source-filter');
+        const applyFiltersButton = document.getElementById('apply-filters');
+        const resetFiltersButton = document.getElementById('reset-filters');
+        
+        // Load results from file
+        async function loadResults() {
+            try {
+                // Get the file path from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const filePath = urlParams.get('file') || 'scraping_results.json';
+                
+                const response = await fetch(filePath);
+                if (!response.ok) {
+                    throw new Error(`Failed to load results: ${response.status} ${response.statusText}`);
+                }
+                
+                allResults = await response.json();
+                filteredResults = [...allResults];
+                
+                // Extract unique sources
+                allResults.forEach(result => {
+                    if (result.source) {
+                        sources.add(result.source);
+                    }
+                });
+                
+                // Populate source filter
+                populateSourceFilter();
+                
+                // Update the UI
+                updateStats();
+                renderResults();
+                
+            } catch (error) {
+                console.error('Error loading results:', error);
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>Error loading results: ${error.message}</p>
+                        <p>Make sure the results file exists and is valid JSON.</p>
+                    </div>
+                `;
+                statsElement.innerHTML = '<p>Error loading statistics</p>';
+            }
+        }
+        
+        // Populate source filter dropdown
+        function populateSourceFilter() {
+            sourceFilter.innerHTML = '<option value="">All Sources</option>';
+            
+            // Sort sources alphabetically
+            const sortedSources = Array.from(sources).sort();
+            
+            sortedSources.forEach(source => {
+                const option = document.createElement('option');
+                option.value = source;
+                option.textContent = source;
+                sourceFilter.appendChild(option);
+            });
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalResults = allResults.length;
+            const filteredCount = filteredResults.length;
+            const uniqueSources = sources.size;
+            
+            statsElement.innerHTML = `
+                <p><strong>Total Results:</strong> ${totalResults}</p>
+                <p><strong>Filtered Results:</strong> ${filteredCount}</p>
+                <p><strong>Unique Sources:</strong> ${uniqueSources}</p>
+            `;
+        }
+        
+        // Render results for the current page
+        function renderResults() {
+            if (filteredResults.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>No results found matching your filters.</p>
+                    </div>
+                `;
+                paginationElement.innerHTML = '';
+                return;
+            }
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+            if (currentPage > totalPages) {
+                currentPage = 1;
+            }
+            
+            const startIndex = (currentPage - 1) * resultsPerPage;
+            const endIndex = Math.min(startIndex + resultsPerPage, filteredResults.length);
+            const currentResults = filteredResults.slice(startIndex, endIndex);
+            
+            // Render results
+            resultsContainer.innerHTML = currentResults.map(result => `
+                <div class="result-card">
+                    <h3><a href="${result.url}" target="_blank">${result.title || 'Untitled'}</a></h3>
+                    <div class="meta">
+                        <span class="source-tag">${result.source || 'Unknown Source'}</span>
+                        ${result.date ? `<span>Date: ${result.date}</span>` : ''}
+                        ${result.authors && result.authors.length > 0 ? 
+                            `<span>Authors: ${result.authors.join(', ')}</span>` : ''}
+                    </div>
+                    <div class="snippet">${result.snippet || 'No description available'}</div>
+                </div>
+            `).join('');
+            
+            // Render pagination
+            renderPagination(totalPages);
+        }
+        
+        // Render pagination controls
+        function renderPagination(totalPages) {
+            if (totalPages <= 1) {
+                paginationElement.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <button ${currentPage === 1 ? 'disabled' : ''} 
+                        onclick="changePage(${currentPage - 1})">
+                    Previous
+                </button>
+            `;
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="${i === currentPage ? 'active' : ''}" 
+                            onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // Next button
+            paginationHTML += `
+                <button ${currentPage === totalPages ? 'disabled' : ''} 
+                        onclick="changePage(${currentPage + 1})">
+                    Next
+                </button>
+            `;
+            
+            paginationElement.innerHTML = paginationHTML;
+        }
+        
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            renderResults();
+            window.scrollTo(0, 0);
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedSource = sourceFilter.value;
+            
+            filteredResults = allResults.filter(result => {
+                // Filter by search term
+                const matchesSearch = searchTerm === '' || 
+                    (result.title && result.title.toLowerCase().includes(searchTerm)) ||
+                    (result.snippet && result.snippet.toLowerCase().includes(searchTerm));
+                
+                // Filter by source
+                const matchesSource = selectedSource === '' || 
+                    (result.source && result.source === selectedSource);
+                
+                return matchesSearch && matchesSource;
+            });
+            
+            currentPage = 1;
+            updateStats();
+            renderResults();
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            searchInput.value = '';
+            sourceFilter.value = '';
+            filteredResults = [...allResults];
+            currentPage = 1;
+            updateStats();
+            renderResults();
+        }
+        
+        // Event listeners
+        applyFiltersButton.addEventListener('click', applyFilters);
+        resetFiltersButton.addEventListener('click', resetFilters);
+        
+        // Make changePage function globally available
+        window.changePage = changePage;
+        
+        // Load results when the page loads
+        document.addEventListener('DOMContentLoaded', loadResults);
+    </script>
+</body>
+</html>

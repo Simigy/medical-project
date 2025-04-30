@@ -1,0 +1,182 @@
+[
+  {
+    "id": "pubmed-0",
+    "title": "Mock Result 0 for pubmed",
+    "url": "https://example.com/pubmed/0",
+    "source": "PUBMED",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in pubmed.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "pubmed-1",
+    "title": "Mock Result 1 for pubmed",
+    "url": "https://example.com/pubmed/1",
+    "source": "PUBMED",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in pubmed.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "pubmed-2",
+    "title": "Mock Result 2 for pubmed",
+    "url": "https://example.com/pubmed/2",
+    "source": "PUBMED",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in pubmed.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "fda-drugs-0",
+    "title": "Mock Result 0 for fda-drugs",
+    "url": "https://example.com/fda-drugs/0",
+    "source": "FDA-DRUGS",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in fda-drugs.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "fda-drugs-1",
+    "title": "Mock Result 1 for fda-drugs",
+    "url": "https://example.com/fda-drugs/1",
+    "source": "FDA-DRUGS",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in fda-drugs.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "fda-drugs-2",
+    "title": "Mock Result 2 for fda-drugs",
+    "url": "https://example.com/fda-drugs/2",
+    "source": "FDA-DRUGS",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in fda-drugs.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "ema-medicines-0",
+    "title": "Mock Result 0 for ema-medicines",
+    "url": "https://example.com/ema-medicines/0",
+    "source": "EMA-MEDICINES",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in ema-medicines.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "ema-medicines-1",
+    "title": "Mock Result 1 for ema-medicines",
+    "url": "https://example.com/ema-medicines/1",
+    "source": "EMA-MEDICINES",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in ema-medicines.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "ema-medicines-2",
+    "title": "Mock Result 2 for ema-medicines",
+    "url": "https://example.com/ema-medicines/2",
+    "source": "EMA-MEDICINES",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in ema-medicines.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "mhra-0",
+    "title": "Mock Result 0 for mhra",
+    "url": "https://example.com/mhra/0",
+    "source": "MHRA",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in mhra.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "mhra-1",
+    "title": "Mock Result 1 for mhra",
+    "url": "https://example.com/mhra/1",
+    "source": "MHRA",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in mhra.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "mhra-2",
+    "title": "Mock Result 2 for mhra",
+    "url": "https://example.com/mhra/2",
+    "source": "MHRA",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in mhra.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "tga-cmi-0",
+    "title": "Mock Result 0 for tga-cmi",
+    "url": "https://example.com/tga-cmi/0",
+    "source": "TGA-CMI",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in tga-cmi.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "tga-cmi-1",
+    "title": "Mock Result 1 for tga-cmi",
+    "url": "https://example.com/tga-cmi/1",
+    "source": "TGA-CMI",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in tga-cmi.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  },
+  {
+    "id": "tga-cmi-2",
+    "title": "Mock Result 2 for tga-cmi",
+    "url": "https://example.com/tga-cmi/2",
+    "source": "TGA-CMI",
+    "date": "2023-01-01",
+    "snippet": "This is a mock result for paracetamol in tga-cmi.",
+    "authors": [
+      "Author 1",
+      "Author 2"
+    ]
+  }
+]

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test HTML Page</h1>
+        <p>This is a simple HTML page to test if your browser can render basic HTML content.</p>
+        <p>If you can see this page, then your browser is working correctly, and the issue might be with the Next.js application.</p>
+        
+        <h2>Next Steps</h2>
+        <p>If this page displays correctly, try the following:</p>
+        <ol>
+            <li>Check if your Next.js server is running correctly</li>
+            <li>Look for any JavaScript errors in the browser console</li>
+            <li>Try clearing your browser cache</li>
+            <li>Try a different browser</li>
+        </ol>
+        
+        <a href="http://localhost:3000" class="button">Go back to the app</a>
+    </div>
+
+    <script>
+        // Simple script to test if JavaScript is working
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded successfully');
+            
+            // Add a dynamic element to the page
+            const dynamicElement = document.createElement('div');
+            dynamicElement.style.marginTop = '20px';
+            dynamicElement.style.padding = '10px';
+            dynamicElement.style.backgroundColor = '#f0f0f0';
+            dynamicElement.style.borderRadius = '4px';
+            
+            const currentTime = new Date().toLocaleTimeString();
+            dynamicElement.textContent = `Current time: ${currentTime}`;
+            
+            document.querySelector('.container').appendChild(dynamicElement);
+        });
+    </script>
+</body>
+</html>

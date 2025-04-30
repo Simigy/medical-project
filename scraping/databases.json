@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pubmed",
+    "name": "PubMed",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/",
+    "description": "PubMed is a free search engine accessing primarily the MEDLINE database of references and abstracts on life sciences and biomedical topics."
+  },
+  {
+    "id": "tga-cmi",
+    "name": "TGA - Consumer Medicines Information",
+    "url": "https://www.tga.gov.au/products/consumer-medicines-information/",
+    "description": "Consumer Medicines Information from the Therapeutic Goods Administration (TGA) of Australia."
+  },
+  {
+    "id": "ema-medicines",
+    "name": "EMA - Medicines",
+    "url": "https://www.ema.europa.eu/en/medicines/",
+    "description": "European Medicines Agency (EMA) database of medicines."
+  },
+  {
+    "id": "mhra",
+    "name": "MHRA",
+    "url": "https://products.mhra.gov.uk/",
+    "description": "Medicines and Healthcare products Regulatory Agency (MHRA) of the UK."
+  },
+  {
+    "id": "fda-drugs",
+    "name": "FDA - Drugs",
+    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/",
+    "description": "U.S. Food and Drug Administration (FDA) drug database."
+  },
+  {
+    "id": "swissmedic",
+    "name": "Swissmedic",
+    "url": "https://www.swissmedic.ch/swissmedic/en/home/humanarzneimittel/marktueberwachung/health-professional-communication--hpc-/",
+    "description": "Swiss Agency for Therapeutic Products."
+  },
+  {
+    "id": "medsafe",
+    "name": "Medsafe",
+    "url": "https://www.medsafe.govt.nz/",
+    "description": "New Zealand Medicines and Medical Devices Safety Authority."
+  },
+  {
+    "id": "tga",
+    "name": "TGA",
+    "url": "https://www.tga.gov.au/",
+    "description": "Therapeutic Goods Administration (TGA) of Australia."
+  },
+  {
+    "id": "lakemedelsverket",
+    "name": "Läkemedelsverket",
+    "url": "https://www.lakemedelsverket.se/en/",
+    "description": "Swedish Medical Products Agency."
+  },
+  {
+    "id": "dailymed",
+    "name": "DailyMed",
+    "url": "https://dailymed.nlm.nih.gov/dailymed/",
+    "description": "DailyMed provides information about marketed drugs including FDA labels (package inserts)."
+  }
+]

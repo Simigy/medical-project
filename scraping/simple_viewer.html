@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSearch Simple Results Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .stats {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filters {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-radius: 5px;
+        }
+        .filters input, .filters select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .filters button {
+            padding: 8px 15px;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filters button:hover {
+            background-color: #3a5a80;
+        }
+        .result-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .result-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .result-card a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .result-card a:hover {
+            text-decoration: underline;
+        }
+        .result-card .meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        .result-card .snippet {
+            margin-top: 10px;
+            color: #555;
+        }
+        .source-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e0f2f1;
+            color: #00796b;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #e9ecef;
+        }
+        .pagination button.active {
+            background-color: #4a6fa5;
+            color: white;
+            border-color: #4a6fa5;
+        }
+    </style>
+</head>
+<body>
+    <h1>MedSearch Results Viewer</h1>
+    
+    <div class="stats" id="stats">
+        <p><strong>Total Results:</strong> 10</p>
+        <p><strong>Filtered Results:</strong> 10</p>
+        <p><strong>Unique Sources:</strong> 6</p>
+    </div>
+    
+    <div class="filters">
+        <input type="text" id="search-input" placeholder="Filter results...">
+        <select id="source-filter">
+            <option value="">All Sources</option>
+            <option value="TGA - Consumer Medicines Information">TGA - Consumer Medicines Information</option>
+            <option value="EMA - Medicines">EMA - Medicines</option>
+            <option value="MHRA">MHRA</option>
+            <option value="FDA - Drugs">FDA - Drugs</option>
+            <option value="PubMed">PubMed</option>
+            <option value="Medsafe - Medicine Safety">Medsafe - Medicine Safety</option>
+        </select>
+        <button id="apply-filters">Apply Filters</button>
+        <button id="reset-filters">Reset</button>
+    </div>
+    
+    <div id="results-container">
+        <!-- Sample Results -->
+        <div class="result-card">
+            <h3><a href="https://www.tga.gov.au/products/consumer-medicines-information/paracetamol" target="_blank">Paracetamol Consumer Medicine Information</a></h3>
+            <div class="meta">
+                <span class="source-tag">TGA - Consumer Medicines Information</span>
+                <span>Date: 2023-05-15</span>
+            </div>
+            <div class="snippet">Paracetamol Consumer Medicine Information. This leaflet contains important information about paracetamol. You should read it carefully before taking this medicine. Paracetamol is used to relieve pain and reduce fever.</div>
+        </div>
+        
+        <div class="result-card">
+            <h3><a href="https://www.tga.gov.au/products/consumer-medicines-information/panadol" target="_blank">Panadol (Paracetamol)</a></h3>
+            <div class="meta">
+                <span class="source-tag">TGA - Consumer Medicines Information</span>
+                <span>Date: 2023-04-20</span>
+                <span>Authors: GlaxoSmithKline</span>
+            </div>
+            <div class="snippet">Panadol contains the active ingredient paracetamol. It is used to relieve pain and reduce fever. It may be used for the relief of headaches, cold and flu symptoms, toothaches, and pain associated with arthritis.</div>
+        </div>
+        
+        <div class="result-card">
+            <h3><a href="https://www.ema.europa.eu/en/medicines/human/paracetamol-500mg-tablets" target="_blank">Paracetamol 500mg Tablets</a></h3>
+            <div class="meta">
+                <span class="source-tag">EMA - Medicines</span>
+                <span>Date: 2023-06-10</span>
+                <span>Authors: European Medicines Agency</span>
+            </div>
+            <div class="snippet">Paracetamol 500mg Tablets are indicated for the treatment of mild to moderate pain including headache, migraine, toothache, sore throat and aches and pains associated with colds and flu. They are also used for the symptomatic relief of pain due to rheumatism, arthritis and muscular aches.</div>
+        </div>
+        
+        <div class="result-card">
+            <h3><a href="https://www.gov.uk/drug-safety-update/paracetamol-updated-advice-on-use-during-pregnancy" target="_blank">Paracetamol: updated advice on use during pregnancy</a></h3>
+            <div class="meta">
+                <span class="source-tag">MHRA</span>
+                <span>Date: 2023-02-15</span>
+                <span>Authors: Medicines and Healthcare products Regulatory Agency</span>
+            </div>
+            <div class="snippet">The MHRA has reviewed the available evidence on the use of paracetamol during pregnancy. While paracetamol remains the preferred painkiller for use during pregnancy, it should be used at the lowest effective dose for the shortest possible time.</div>
+        </div>
+        
+        <div class="result-card">
+            <h3><a href="https://www.fda.gov/drugs/drug-safety-and-availability/fda-drug-safety-communication-prescription-acetaminophen-products" target="_blank">FDA Drug Safety Communication: Prescription Acetaminophen Products</a></h3>
+            <div class="meta">
+                <span class="source-tag">FDA - Drugs</span>
+                <span>Date: 2023-03-05</span>
+                <span>Authors: U.S. Food and Drug Administration</span>
+            </div>
+            <div class="snippet">The U.S. Food and Drug Administration (FDA) is asking manufacturers of prescription combination drug products containing acetaminophen to limit the amount of acetaminophen to no more than 325 mg in each tablet or capsule to reduce the risk of liver injury.</div>
+        </div>
+    </div>
+    
+    <div class="pagination">
+        <button disabled>Previous</button>
+        <button class="active">1</button>
+        <button>2</button>
+        <button>Next</button>
+    </div>
+    
+    <script>
+        // This is a simplified version with static content
+        // The buttons don't actually do anything in this demo
+        document.getElementById('apply-filters').addEventListener('click', function() {
+            alert('In the full version, this would filter the results based on your criteria.');
+        });
+        
+        document.getElementById('reset-filters').addEventListener('click', function() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('source-filter').value = '';
+            alert('In the full version, this would reset all filters.');
+        });
+    </script>
+</body>
+</html>

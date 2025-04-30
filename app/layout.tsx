@@ -1,16 +1,12 @@
-import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "MedSearch - Advanced Medicine Database Search",
-  description: "Search for active ingredients across multiple medicine databases with precision and ease.",
-    generator: 'v0.dev'
+  description: "Search for active ingredients across multiple trusted medical and pharmaceutical databases.",
 }
 
 export default function RootLayout({
@@ -20,13 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.svg" />
-      </head>
-      <body suppressHydrationWarning className={`${inter.className} flex flex-col min-h-screen bg-gray-50`}>
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
-        <Footer />
+      <body className={`${inter.className} bg-gray-50`} suppressHydrationWarning>
+        <main className="container mx-auto px-4 py-8">
+          {children}
+        </main>
       </body>
     </html>
   )

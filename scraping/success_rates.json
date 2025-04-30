@@ -1,0 +1,42 @@
+{
+  "pubmed": {
+    "api": {
+      "success": 8,
+      "total": 8,
+      "rate": 1.0
+    }
+  },
+  "tga-cmi": {
+    "browser": {
+      "success": 0,
+      "total": 7,
+      "rate": 0.0
+    },
+    "selenium": {
+      "success": 0,
+      "total": 7,
+      "rate": 0.0
+    }
+  },
+  "ema-medicines": {
+    "api": {
+      "success": 0,
+      "total": 8,
+      "rate": 0.0
+    }
+  },
+  "fda-drugs": {
+    "api": {
+      "success": 0,
+      "total": 8,
+      "rate": 0.0
+    }
+  },
+  "mhra": {
+    "api": {
+      "success": 0,
+      "total": 1,
+      "rate": 0.0
+    }
+  }
+}

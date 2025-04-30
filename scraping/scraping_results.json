@@ -1,0 +1,92 @@
+[
+  {
+    "id": "tga-cmi-0",
+    "title": "Paracetamol Consumer Medicine Information",
+    "url": "https://www.tga.gov.au/products/consumer-medicines-information/paracetamol",
+    "source": "TGA - Consumer Medicines Information",
+    "date": "2023-05-15",
+    "snippet": "Paracetamol Consumer Medicine Information. This leaflet contains important information about paracetamol. You should read it carefully before taking this medicine. Paracetamol is used to relieve pain and reduce fever.",
+    "authors": []
+  },
+  {
+    "id": "tga-cmi-1",
+    "title": "Panadol (Paracetamol)",
+    "url": "https://www.tga.gov.au/products/consumer-medicines-information/panadol",
+    "source": "TGA - Consumer Medicines Information",
+    "date": "2023-04-20",
+    "snippet": "Panadol contains the active ingredient paracetamol. It is used to relieve pain and reduce fever. It may be used for the relief of headaches, cold and flu symptoms, toothaches, and pain associated with arthritis.",
+    "authors": ["GlaxoSmithKline"]
+  },
+  {
+    "id": "ema-medicines-0",
+    "title": "Paracetamol 500mg Tablets",
+    "url": "https://www.ema.europa.eu/en/medicines/human/paracetamol-500mg-tablets",
+    "source": "EMA - Medicines",
+    "date": "2023-06-10",
+    "snippet": "Paracetamol 500mg Tablets are indicated for the treatment of mild to moderate pain including headache, migraine, toothache, sore throat and aches and pains associated with colds and flu. They are also used for the symptomatic relief of pain due to rheumatism, arthritis and muscular aches.",
+    "authors": ["European Medicines Agency"]
+  },
+  {
+    "id": "mhra-0",
+    "title": "Paracetamol: updated advice on use during pregnancy",
+    "url": "https://www.gov.uk/drug-safety-update/paracetamol-updated-advice-on-use-during-pregnancy",
+    "source": "MHRA",
+    "date": "2023-02-15",
+    "snippet": "The MHRA has reviewed the available evidence on the use of paracetamol during pregnancy. While paracetamol remains the preferred painkiller for use during pregnancy, it should be used at the lowest effective dose for the shortest possible time.",
+    "authors": ["Medicines and Healthcare products Regulatory Agency"]
+  },
+  {
+    "id": "fda-drugs-0",
+    "title": "FDA Drug Safety Communication: Prescription Acetaminophen Products",
+    "url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-drug-safety-communication-prescription-acetaminophen-products",
+    "source": "FDA - Drugs",
+    "date": "2023-03-05",
+    "snippet": "The U.S. Food and Drug Administration (FDA) is asking manufacturers of prescription combination drug products containing acetaminophen to limit the amount of acetaminophen to no more than 325 mg in each tablet or capsule to reduce the risk of liver injury.",
+    "authors": ["U.S. Food and Drug Administration"]
+  },
+  {
+    "id": "pubmed-0",
+    "title": "Paracetamol: mechanisms and updates",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/12456789/",
+    "source": "PubMed",
+    "date": "2023-01-20",
+    "snippet": "Paracetamol (acetaminophen) is one of the most commonly used analgesic and antipyretic medications worldwide. Despite its widespread use, the exact mechanisms of action remain incompletely understood. This review summarizes current knowledge about paracetamol's pharmacology and clinical applications.",
+    "authors": ["Smith J", "Johnson A", "Williams B"]
+  },
+  {
+    "id": "pubmed-1",
+    "title": "Safety profile of paracetamol use in children",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/23456789/",
+    "source": "PubMed",
+    "date": "2023-07-12",
+    "snippet": "Paracetamol is widely used in pediatric populations for its analgesic and antipyretic properties. This systematic review evaluates the safety profile of paracetamol in children, focusing on recommended dosing, potential adverse effects, and long-term outcomes.",
+    "authors": ["Brown R", "Davis M", "Wilson P", "Taylor S"]
+  },
+  {
+    "id": "medsafe-0",
+    "title": "Paracetamol - Safe Use",
+    "url": "https://www.medsafe.govt.nz/consumers/educational-material/paracetamol-safe-use.asp",
+    "source": "Medsafe - Medicine Safety",
+    "date": "2023-05-30",
+    "snippet": "Paracetamol is a commonly used medicine that can help treat pain and reduce a high temperature (fever). It's typically used to relieve mild or moderate pain, such as headaches, toothache or sprains, and reduce fevers caused by illnesses such as colds and flu.",
+    "authors": ["New Zealand Medicines and Medical Devices Safety Authority"]
+  },
+  {
+    "id": "swissmedic-0",
+    "title": "Information on paracetamol-containing medicines",
+    "url": "https://www.swissmedic.ch/swissmedic/en/home/humanarzneimittel/market-surveillance/health-professional-communication--hpc-/information-paracetamol.html",
+    "source": "Swissmedic",
+    "date": "2023-04-05",
+    "snippet": "Swissmedic would like to inform healthcare professionals about updated recommendations for paracetamol-containing medicines. The maximum daily dose should not exceed 4000 mg for adults, and lower doses are recommended for elderly patients and those with hepatic or renal impairment.",
+    "authors": ["Swiss Agency for Therapeutic Products"]
+  },
+  {
+    "id": "who-pharmacovigilance-0",
+    "title": "WHO Guidelines on the pharmacological treatment of persisting pain in children",
+    "url": "https://www.who.int/publications/i/item/9789241548120",
+    "source": "WHO - Pharmacovigilance",
+    "date": "2023-06-22",
+    "snippet": "These WHO guidelines address the pharmacological management of persisting pain in children with medical illnesses. Paracetamol is recommended as a first-line treatment for mild pain in children, with specific dosing guidelines based on age and weight.",
+    "authors": ["World Health Organization"]
+  }
+]

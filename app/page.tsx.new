@@ -1,0 +1,9 @@
+export default function HomePage() {
+  return (
+    <div>
+      <h1>MedSearch Home</h1>
+      <p>Welcome to MedSearch. This is a simple test page.</p>
+      <a href="/simple">Go to Simple Test Page</a>
+    </div>
+  )
+}
